@@ -41,7 +41,7 @@ local filliste: dir "." files "*.csv" , respectcase
 
 	/***********************************************
 	* For utviklingen: Kommenter ut løkka "foreach fil of local filliste".
-	local fil "SVANGERROYK_GK_POSTPROSESS_2023-03-27-15-45.csv"
+	local fil "KMI_MFR_GK_2023-03-27-10-25.csv"
 	***********************************************/
 
 foreach fil of local filliste {			//Løkke gjennom filene
@@ -105,6 +105,10 @@ foreach fil of local filliste {			//Løkke gjennom filene
 	levelsof(SPVFLAGG), local(kategorierSPV) separate(", ") clean
 	// Nå har hvert var-nummer en tilhørende `kategorier2' etc.
 	
+	* TELLE ANTALL KATEGORIER I GEO
+	* Skal både oppgis i output, og brukes i et filter nedenfor.
+	levelsof(GEO), local(geokat)
+	local antgeo = wordcount("`geokat'")
 	
 	* LEGGE RESULTATENE I LISTA
 	frame change liste
@@ -125,7 +129,7 @@ foreach fil of local filliste {			//Løkke gjennom filene
 	reshape long var, i(filnavn) j(varnr)
 	drop if missing(var)
 
-	generate SLETT_MEG = "", before(filnavn)		// Legger den nye variabelen først.
+	generate SLETT_VARIABEL = "", before(filnavn)		// Legger den nye variabelen først.
 													// Brukes til å manuelt flagge variabler for sletting.
 
 	* Flagge evt. uprikkede måltall
@@ -143,11 +147,37 @@ foreach fil of local filliste {			//Løkke gjennom filene
 	replace KATEGORIER = "`kategorierSPV'" if var == "SPVFLAGG"
 *exit
 
+	* Legge ut antall geo-kategorier
+	replace KATEGORIER = "`antgeo'" if var == "GEO"
+
+	* Legge til kolonner for å flagge rader som skal slettes - eller beholdes
+	generate SLETT_KAT = "", before(KATEGORIER)
+	generate KEEP_KAT  = "", before(KATEGORIER)
+
+	* Legge inn default-verdier for SLETT_VARIABEL
+	*- TELLER/ANTALL flagges for sletting hvis det er mer enn én GEO-kategori
+	if `antgeo' > 1 {
+		replace SLETT_VARIABEL = "xx" if var == "TELLER"
+		replace SLETT_VARIABEL = "xx" if var == "ANTALL"
+	}
+	
+	*- NEVNER, sumNEVNER flagges for sletting unntatt hvis det er en kube fra LKU eller RFU
+	if !regexm(filnavn, ".*LKU.*") | regexm(filnavn, ".*RFU.*") {
+		replace SLETT_VARIABEL = "xx" if var == "NEVNER"
+		replace SLETT_VARIABEL = "xx" if var == "sumNEVNER"
+	}
+	
+	*- RATEN slettes alltid
+	replace SLETT_VARIABEL = "xx" if var == "RATEN"
+*exit	
+
 	* Lagre ferdig liste for denne kuben
 	append using `mellomlager'
 	save `mellomlager', replace
 	frame change default
 } // end -enkeltfil-
+*exit
+
 
 * Lagre ferdig liste
 frame change liste
