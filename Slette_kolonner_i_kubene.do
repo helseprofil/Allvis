@@ -30,11 +30,11 @@ quietly {
 
 *===============================================================================	
 * VELG KATALOG SOM SKAL RENSES
-local path "F:\Forskningsprosjekter\PDB 2455 - Helseprofiler og til_\PRODUKSJON\PRODUKTER\KUBER\KOMMUNEHELSA\KH2024NESSTAR"
+local path "F:\Forskningsprosjekter\PDB 2455 - Helseprofiler og til_\PRODUKSJON\PRODUKTER\KUBER\KOMMUNEHELSA\KH2024NESSTAR_PreAllvis"
 
 * Utfylt listefil:
 	//   For test: Variabler_i_kubene_UTVIKLING.csv
-local utfyltliste "Variabler_i_kubene_UTVIKLING.csv"
+local utfyltliste "Variabler_i_kubene_05.05.2023.csv"
 
 *===============================================================================	
 * KJØRING
@@ -43,7 +43,7 @@ capture mkdir "`path'\Allvis"	//Der ferdigrensede filer lagres
 frames reset
 cd "`path'"
 noisily pwd
-import delimited "`path'\Filliste\\`utfyltliste'" , case(preserve) clear
+import delimited "`path'\Filliste\\`utfyltliste'" , stringcols(1 2 4 5 6 7 8) case(preserve) clear
 
 						// ANM: Import delimited lagrer som StrL hvis det sparer plass. Hver celle i StrL
 						// tar bare det aktuelle antallet bytes, mens en Str# bruker # bytes for alle celler.
@@ -58,7 +58,7 @@ frame kube: cd "`path'"
 local feil ""					//Til å samle opp hvis det skjer noe underveis
 
 	/*For utviklingen: KOMMENTER UT -foreach fil- nedenfor, og sluttparentesen dens.
-	local fil "FODEVEKT_2023-03-27-10-20.csv"
+	local fil "BEFOLK_GK_2023-03-29-13-07.csv"
 	// Utvikling: La inn for FODEVEKT-filen at OVER_UNDER == "AVEKT_O4500" skal droppes (Slett_Kat er var6 i lista), 
 	// og bare AAR == "2013_2022" skal keep'es (Keep_Kat er var7).
 	*/
@@ -148,6 +148,7 @@ foreach fil of local filnavn {
 				} //end -if var. har max én kategori-
 				else {
 					local enkeltfeil = "feil"
+					local feil = "feil"
 					noisily di as err "   Variabel `variabel' flagget for sletting har mer enn én kategori."
 				} //end -feil-
 				
@@ -174,10 +175,10 @@ foreach fil of local filnavn {
 } //end -foreach fil (enkeltfil-løkke)-
 
 * Helt til slutt: Si fra hvis det var trøbbel underveis
-if !missing(`feil') {
+if !missing("`feil'") {
 	noisily di as err _n "Det har skjedd en feil, sjekk for meldinger ovenfor!" _n
 } //end -varsle om feil-
 
-noisily di "Ferdig - husk å kopiere rensede filer til skarp NESSTAR-katalog." _n
+noisily di _n "Ferdig - husk å kopiere rensede filer til skarp NESSTAR-katalog." _n
 } // end -quietly-
 
