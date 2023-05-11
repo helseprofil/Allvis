@@ -30,11 +30,11 @@ quietly {
 
 *===============================================================================	
 * VELG KATALOG SOM SKAL RENSES
-local path "F:\Forskningsprosjekter\PDB 2455 - Helseprofiler og til_\PRODUKSJON\PRODUKTER\KUBER\KOMMUNEHELSA\KH2024NESSTAR_PreAllvis"
+local path "F:\Forskningsprosjekter\PDB 2455 - Helseprofiler og til_\PRODUKSJON\PRODUKTER\KUBER\KOMMUNEHELSA\KH2023NESSTAR_PreAllvis"
 
 * Utfylt listefil:
 	//   For test: Variabler_i_kubene_UTVIKLING.csv
-local utfyltliste "Variabler_i_kubene_05.05.2023.csv"
+local utfyltliste "Variabler_i_kubene_08.05.2023.csv"
 
 *===============================================================================	
 * KJØRING
@@ -169,7 +169,7 @@ foreach fil of local filnavn {
 	} // end -det er noe som skal slettes-
 
 	else { // Det var ikke noe som skulle slettes, kopier filen til katalogen med rensede filer!	
-		shell copy ".\\`path'\\`fil'" "`path'\Allvis\\`fil'"
+		shell copy "`path'\\`fil'" "`path'\Allvis\\`fil'"
 	}
 	
 } //end -foreach fil (enkeltfil-løkke)-
