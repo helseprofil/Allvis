@@ -20,10 +20,9 @@ quietly {
 	- Bruker frames for å ha styringsparameterne og den aktuelle kubefilen åpne samtidig.
 			
 ***********************************************************
-	OBS:  STATUS 10.5.23:
+	OBS:  STATUS 23.5.23:
 	IKKE FERDIG UTVIKLET sletting av KATEGORIER. Vi vedtok å vente med det.
-	- Sletting av kategorier som er markert i SLETT_KAT funker delvis - men ikke for multiple numeriske koder -
-	  og KEEP_KAT er ikke implementert.
+	- Jeg laget en IF-ELSE som hopper over sletting av kategorier og gir melding i console.
 	
 ***********************************************************
 
@@ -86,7 +85,7 @@ foreach fil of local filnavn {
 	replace KEEP_KAT = ustrtrim(KEEP_KAT)		//Fjerner både leading og trailing whitespace. En enkelt space blir borte.
 	levelsof KEEP_KAT, local(kat2)
 	
-	if !missing("`kat1'") | !missing("`kat2'") {	//Si ifra: Sletting av kategorier er ikke implementert.
+	if !missing(`"`kat1'"') | !missing(`"`kat2'"') {	//Si ifra: Sletting av kategorier er ikke implementert.
 		di as err "OBS: Sletting av kategorier er ikke implementert. Filen må renses manuelt."
 		local enkeltfeil = "feil"		// Flagge at denne filen ikke skal lagres.
 		local feil = "feil"				// Plukke opp til slutt og varsle om at noe skjedde.
