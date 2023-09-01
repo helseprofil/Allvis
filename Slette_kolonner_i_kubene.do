@@ -29,12 +29,15 @@ quietly {
 */
 
 *===============================================================================	
-* VELG KATALOG SOM SKAL RENSES
-local path "F:\Forskningsprosjekter\PDB 2455 - Helseprofiler og til_\PRODUKSJON\PRODUKTER\KUBER\KOMMUNEHELSA\KH2023NESSTAR_PreAllvis"
+* VELG KATALOG SOM SKAL RENSES (Årstall!)
+*KH:
+*local path "F:\Forskningsprosjekter\PDB 2455 - Helseprofiler og til_\PRODUKSJON\PRODUKTER\KUBER\KOMMUNEHELSA\KH2024NESSTAR_PreAllvis"
+*NH:
+local path "F:\Forskningsprosjekter\PDB 2455 - Helseprofiler og til_\PRODUKSJON\PRODUKTER\KUBER\NORGESHELSA\NH2024NESSTAR_PreAllvis"
 
-* Utfylt listefil:
+* Utfylt listefil: (Ligger i underkatalog \Filliste)
 	//   For test: Variabler_i_kubene_UTVIKLING.csv
-local utfyltliste "Variabler_i_kubene_08.05.2023.csv"
+local utfyltliste "Variabler_i_kubene_NH2024_05.05.2023.csv"
 
 *===============================================================================	
 * KJØRING
@@ -63,11 +66,15 @@ local feil ""					//Til å samle opp hvis det skjer noe underveis
 	// og bare AAR == "2013_2022" skal keep'es (Keep_Kat er var7).
 	*/
 
+*===============================================================================	
+* HOVEDLØKKE
+
 foreach fil of local filnavn {
 	local enkeltfeil ""								//Nullstille feilindikatoren
 	frame change default
 	capture frame drop spec							//Capture fordi den ikke eksisterer før første fil.
-	
+
+	*---------------------------------------------------------------------------
     * Les variabellista og hva som skal slettes
 	noisily di as res "Behandler `fil'"
 	frame put if filnavn == "`fil'", into(spec)		//kopierer radene for aktuell fil til en ny frame
@@ -87,8 +94,9 @@ foreach fil of local filnavn {
 
 	if !missing("`merker'") | !missing("`kat1'") | !missing("`kat2'") {			//Vi har noe å slette, så kuben må lastes inn.
 										//Sjekket at logikken her holder. Også space teller som ikke-missing.
+	*---------------------------------------------------------------------------
 		* Vi har noe som skal slettes. Lese inn kubefilen.
-		frame kube:	import delimited "`fil'", case(preserve) clear
+		frame kube:	import delimited "`fil'", stringcols(1) case(preserve) clear	// Må bevare GEO som string
 		* Finn i lista:
 		local maxvar = _N				//Antall variabler i kuben, i følge fillista
 		di "Ant.vars: `maxvar'"
@@ -119,7 +127,7 @@ foreach fil of local filnavn {
 					frame kube: drop if inlist(`variabel', "`slettes'")
 				} // end -stringvar-
 				else {										//Variabelen er numerisk
-					scalar slett = real("`slettes'")
+					scalar slett = real("`slettes'")		//OBS: Takler bare én kategori!
 					*noisily di "Scalar slett: " slett
 					frame kube: drop if inlist(`variabel', slett)
 				} // end -numerisk var-
