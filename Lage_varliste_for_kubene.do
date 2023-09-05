@@ -21,7 +21,7 @@
 
 *===============================================================================	
 * VELG KATALOG Å LESE FRA
-local path "F:\Forskningsprosjekter\PDB 2455 - Helseprofiler og til_\PRODUKSJON\PRODUKTER\KUBER\NORGESHELSA\KH2024NESSTAR"
+local path "F:\Forskningsprosjekter\PDB 2455 - Helseprofiler og til_\Nesstar\ALLVISprepping_oversikt\Forsinket_rensing_CSV"
 	
 *===============================================================================	
 * KJØRING
@@ -41,8 +41,8 @@ local filliste: dir "." files "*.csv" , respectcase
 
 	/***********************************************
 	* For utviklingen: Kommenter ut løkka "foreach fil of local filliste".
-	local fil "RFU_NH_SNUS_5_postprikking_2023-03-17-10-42.csv"
-			*"TRYGGHET_UNGDATA_2023-01-10-15-24.csv"
+	local fil "FORNOYDHETm_NHUS_2022-03-23-13-22.csv"
+		*"RFU_NH_SNUS_5_postprikking_2023-03-17-10-42.csv"
 	pause on
 	***********************************************/
 
@@ -59,6 +59,7 @@ foreach fil of local filliste {			//Løkke gjennom filene
 		*di `antall'
 	
 	* FINN OM NOEN VARIABLER MANGLER PRIKKING
+	* OBS: Dette baseres på at SPVFLAGG finnes og markerer prikkingen.
 	
 	* Må identifisere dimensjoner vs. måltall. 
 	
@@ -163,14 +164,23 @@ foreach fil of local filliste {			//Løkke gjennom filene
 	* Lookfor finner variabler og legger dem i r(varlist).
 	lookfor SPVFLAGG 
 	local spv = r(varlist)
+		*di "spv = (`spv')"	
 	local maltall = subinstr("`maltall'", "`spv'", "", 1)
+	
+	* Hvis SPVFLAGG ikke finnes, må det faktum brukes litt senere
+	if "`spv'" == "." local spvFinnes = "FALSE" 
+	else local spvFinnes = "TRUE"
 		
 	di "Dimensjoner: `dimensjoner'"
 	di "Måltall: `maltall'"
 	// Nå skal alle dimensjoner være listet opp i local `dimensjoner', og 
 	// være fjernet fra local `maltall'.
 *exit	
+
+
 	* Sjekke alle måltall og notere hvis uprikket
+	* OBS: Dette baseres på at SPVFLAGG finnes og markerer prikkingen.
+	if "`spvFinnes'" == "TRUE" {
 	
 			/*************************
 			*Introdusere et funn - må finne en rad med SPV != 0 manuelt
@@ -186,8 +196,9 @@ foreach fil of local filliste {			//Løkke gjennom filene
 		if `r(N)' > 0 local uprikket = "`uprikket'" + "`var'" + ", "	//Det vil alltid være et komma til slutt.
 																		//Det var smart for å skille RATE og RATEN.
 		replace flagg = .
-	}
+	} // end -foreach var-
 	di "Uprikket: `uprikket'"
+	} // end -if "spvFinnes"...-
 	
 	// Nå er eventuelle uprikkede variabler notert i local `uprikket'.
 
@@ -197,7 +208,10 @@ foreach fil of local filliste {			//Løkke gjennom filene
 	    local var = word("`dimensjoner'", `i')
 		levelsof(`var'), local(kategorier`i') separate(", ") clean 	//Får en liste med komma imellom
 	}
-	levelsof(`spv'), local(kategorierSPV) separate(", ") clean		//`spv' er aktuelt varnavn (case!) for SPVFLAGG.
+	if "`spvFinnes'" == "TRUE" {
+		levelsof(`spv'), local(kategorierSPV) separate(", ") clean		//`spv' er aktuelt varnavn (case!) for SPVFLAGG.
+		} // end -spvFinnes-
+		
 	// Nå har hvert var-nummer en tilhørende `kategorier2' etc.
 	
 	* TELLE ANTALL KATEGORIER I GEO
