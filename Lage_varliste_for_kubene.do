@@ -282,7 +282,7 @@ foreach fil of local filliste {			//Løkke gjennom filene
 	}
 	
 	*- RATEN slettes alltid
-	replace SLETT_VARIABEL = "xx" if var == "RATEN"
+	replace SLETT_VARIABEL = "xx" if var == "RATEN" | var == "RATEn"
 *exit	
 
 	* Lagre ferdig liste for denne kuben
